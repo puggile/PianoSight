@@ -4,6 +4,9 @@
   var currentVisualObj = null;
 
   document.addEventListener('DOMContentLoaded', function () {
+    var keySelect = document.getElementById('key');
+    var difficultySelect = document.getElementById('difficulty');
+    var timeSigSelect = document.getElementById('timesig');
     var measuresSelect = document.getElementById('measures');
     var bpmSlider = document.getElementById('bpm');
     var bpmValue = document.getElementById('bpm-value');
@@ -29,7 +32,12 @@
       }
 
       var numMeasures = parseInt(measuresSelect.value, 10);
-      var abc = Generator.generate(numMeasures);
+      var abc = Generator.generate(
+        numMeasures,
+        keySelect.value,
+        timeSigSelect.value,
+        difficultySelect.value
+      );
       currentVisualObj = Renderer.render(abc);
       playBtn.disabled = false;
       audioStatus.textContent = '';
@@ -48,10 +56,13 @@
       if (!currentVisualObj) return;
 
       var bpm = parseInt(bpmSlider.value, 10);
+      var beatsPerMeasure = parseInt(timeSigSelect.value.split('/')[0], 10);
+      var msPerMeasure = beatsPerMeasure * 60000 / bpm;
+
       playBtn.textContent = 'Stop';
       audioStatus.textContent = 'Caricamento audio...';
 
-      Player.play(currentVisualObj, bpm, function () {
+      Player.play(currentVisualObj, bpm, msPerMeasure, function () {
         playBtn.textContent = 'Play';
         audioStatus.textContent = '';
       }).then(function () {

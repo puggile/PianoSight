@@ -9,13 +9,14 @@
   function isSupported() {
     return typeof ABCJS !== 'undefined' &&
       typeof ABCJS.synth !== 'undefined' &&
-      typeof ABCJS.synth.SynthController !== 'undefined' &&
-      typeof AudioContext !== 'undefined';
+      typeof ABCJS.synth.CreateSynth !== 'undefined' &&
+      (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined');
   }
 
   function ensureContext() {
     if (!audioContext) {
-      audioContext = new AudioContext();
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      audioContext = new Ctx();
     }
     if (audioContext.state === 'suspended') {
       return audioContext.resume();
@@ -23,17 +24,17 @@
     return Promise.resolve();
   }
 
-  function play(visualObj, bpm, onEnded) {
+  function play(visualObj, bpm, msPerMeasure, onEnded) {
     if (playing) stop();
 
     return ensureContext().then(function () {
       synth = new ABCJS.synth.CreateSynth();
-      var millisecondsPerMeasure = 240000 / bpm;
 
       return synth.init({
         visualObj: visualObj,
         audioContext: audioContext,
-        millisecondsPerMeasure: millisecondsPerMeasure
+        millisecondsPerMeasure: msPerMeasure,
+        options: { qpm: bpm }
       });
     }).then(function () {
       return synth.prime();
@@ -41,7 +42,16 @@
       synth.start();
       playing = true;
 
-      var durationMs = (response && response.duration ? response.duration * 1000 : 5000) + 100;
+      var durationMs = 5000;
+      if (response) {
+        if (typeof response.duration === 'number' && response.duration > 0) {
+          durationMs = response.duration * 1000;
+        } else if (typeof response.totalDuration === 'number' && response.totalDuration > 0) {
+          durationMs = response.totalDuration * 1000;
+        }
+      }
+      durationMs += 200;
+
       endTimer = setTimeout(function () {
         playing = false;
         if (onEnded) onEnded();
@@ -55,7 +65,11 @@
       endTimer = null;
     }
     if (synth) {
-      synth.stop();
+      try {
+        synth.stop();
+      } catch (e) {
+        // Ignore errors if synth is in an invalid state
+      }
     }
     playing = false;
   }
