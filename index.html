@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>myMusic — Esercizi di Lettura Musicale</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>myMusic</h1>
+    <p class="subtitle">Esercizi casuali di lettura musicale per pianisti</p>
+
+    <div class="card controls">
+      <div class="control-group">
+        <label for="measures">Battute</label>
+        <select id="measures">
+          <option value="4" selected>4</option>
+          <option value="8">8</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="bpm">BPM: <span id="bpm-value">90</span></label>
+        <input type="range" id="bpm" min="60" max="140" value="90">
+      </div>
+
+      <div class="control-group buttons">
+        <button id="generate-btn">Genera</button>
+        <button id="play-btn" disabled>Play</button>
+      </div>
+    </div>
+
+    <div class="card notation-card">
+      <div id="notation"></div>
+    </div>
+
+    <div id="audio-status"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
