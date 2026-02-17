@@ -13,29 +13,32 @@
       (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined');
   }
 
+  // Must be called synchronously inside a user-gesture handler (click/tap)
+  // so that iOS Safari unlocks the AudioContext.
   function ensureContext() {
     if (!audioContext) {
       var Ctx = window.AudioContext || window.webkitAudioContext;
       audioContext = new Ctx();
     }
+    // resume() is synchronous-enough on iOS when called in gesture stack
     if (audioContext.state === 'suspended') {
-      return audioContext.resume();
+      audioContext.resume();
     }
-    return Promise.resolve();
   }
 
   function play(visualObj, bpm, msPerMeasure, onEnded) {
     if (playing) stop();
 
-    return ensureContext().then(function () {
-      synth = new ABCJS.synth.CreateSynth();
+    // Unlock audio synchronously in the tap call stack (iOS requirement)
+    ensureContext();
 
-      return synth.init({
-        visualObj: visualObj,
-        audioContext: audioContext,
-        millisecondsPerMeasure: msPerMeasure,
-        options: { qpm: bpm }
-      });
+    synth = new ABCJS.synth.CreateSynth();
+
+    return synth.init({
+      visualObj: visualObj,
+      audioContext: audioContext,
+      millisecondsPerMeasure: msPerMeasure,
+      options: { qpm: bpm }
     }).then(function () {
       return synth.prime();
     }).then(function (response) {
