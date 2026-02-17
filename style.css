@@ -122,9 +122,13 @@ body {
 }
 
 /* ---- Controls Card ---- */
+.controls {
+  overflow: hidden;
+}
+
 .controls-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 1rem;
 }
 
@@ -146,6 +150,7 @@ body {
 select {
   appearance: none;
   -webkit-appearance: none;
+  width: 100%;
   padding: 0.5rem 2rem 0.5rem 0.65rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
@@ -158,6 +163,8 @@ select {
   touch-action: manipulation;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
