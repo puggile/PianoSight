@@ -13,32 +13,31 @@
       (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined');
   }
 
-  // Must be called synchronously inside a user-gesture handler (click/tap)
-  // so that iOS Safari unlocks the AudioContext.
+  // Create AudioContext synchronously in the user gesture call stack (iOS
+  // requirement), then return the resume() promise so callers can wait for
+  // the context to actually be in "running" state before using it.
   function ensureContext() {
     if (!audioContext) {
       var Ctx = window.AudioContext || window.webkitAudioContext;
       audioContext = new Ctx();
     }
-    // resume() is synchronous-enough on iOS when called in gesture stack
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
+    return audioContext.resume();
   }
 
   function play(visualObj, bpm, msPerMeasure, onEnded) {
     if (playing) stop();
 
-    // Unlock audio synchronously in the tap call stack (iOS requirement)
-    ensureContext();
+    // Step 1: unlock audio — create context synchronously in the tap
+    // handler, then wait for resume() to resolve before proceeding.
+    return ensureContext().then(function () {
+      synth = new ABCJS.synth.CreateSynth();
 
-    synth = new ABCJS.synth.CreateSynth();
-
-    return synth.init({
-      visualObj: visualObj,
-      audioContext: audioContext,
-      millisecondsPerMeasure: msPerMeasure,
-      options: { qpm: bpm }
+      return synth.init({
+        visualObj: visualObj,
+        audioContext: audioContext,
+        millisecondsPerMeasure: msPerMeasure,
+        options: { qpm: bpm }
+      });
     }).then(function () {
       return synth.prime();
     }).then(function (response) {
