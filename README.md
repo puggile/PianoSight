@@ -1,8 +1,8 @@
-# myMusic
+# PianoSight
 
 Applicazione web che genera esercizi casuali di lettura a prima vista per pianisti.
 L'utente visualizza un grand staff (chiave di violino + chiave di basso) generato casualmente,
-con possibilita di riproduzione audio per verificare la propria lettura.
+con possibilita di riproduzione audio e download PDF dello spartito.
 
 ## Funzionalita
 
@@ -16,7 +16,8 @@ con possibilita di riproduzione audio per verificare la propria lettura.
 - **Configurazione Random**: modal con checkbox per scegliere quali parametri includere nel pool casuale; le preferenze persistono in localStorage
 - **Espansione automatica per difficolta**: Principiante usa il pool configurato, Intermedio aggiunge G/Em/Bb/Gm + 3/4 + 8 battute, Avanzato usa tutte le opzioni disponibili
 - **Dinamiche**: f, p, mf, mp assegnate automaticamente per sezione
-- **Articolazioni**: staccato e legato con assegnazione variata
+- **Articolazioni**: staccato, legato, o nessuna (solo beginner)
+- **Download PDF**: esportazione vettoriale dello spartito in formato A4 con nome file univoco basato sulle impostazioni
 
 ## Livelli di difficolta
 
@@ -24,7 +25,8 @@ con possibilita di riproduzione audio per verificare la propria lettura.
 
 - Le mani suonano **una per volta**: le misure sono divise 50/50 tra DX e SX
 - L'ordine e casuale (a volte DX prima, a volte SX)
-- Ogni blocco riceve un'articolazione diversa (uno staccato, l'altro legato)
+- **75%**: ogni blocco riceve un'articolazione diversa (uno staccato, l'altro legato)
+- **25%**: esercizio "pulito" senza articolazioni, con dinamiche contrastanti (f vs p)
 - Staccato: deterministico sulle note brevi (durata <= croma/semiminima), assente sulle lunghe
 - Legato: legatura unica sull'intera sezione
 - Ritmi semplici: semibrevi, minime, semiminime
@@ -56,33 +58,36 @@ con possibilita di riproduzione audio per verificare la propria lettura.
    - Salti occasionali di 2-4 gradi (15%)
    - Ultima nota del brano risolta sulla tonica piu vicina
 4. **Pause** (solo intermedio/avanzato): sostituzione probabilistica di singole note
-5. **Articolazioni**: staccato deterministico sulle note corte (dur <= 2 unita), legatura piena o a gruppi
-6. **Dinamiche**: una per sezione (beginner/intermedio) o ogni 2 misure (avanzato)
+5. **Articolazioni**: staccato deterministico sulle note corte, legatura piena o a gruppi, oppure nessuna (beginner 25%)
+6. **Dinamiche**: una per sezione (beginner/intermedio) o ogni 2 misure (avanzato); nel caso "pulito" beginner si usa f vs p
 7. **Serializzazione**: il tutto viene convertito in notazione ABC e renderizzato tramite ABCJS
 
 ## Stack tecnologico
 
-| Componente     | Tecnologia                          |
-|----------------|-------------------------------------|
-| Linguaggio     | JavaScript vanilla                  |
-| Rendering note | [ABCJS](https://www.abcjs.net/) 6.x (CDN) |
-| Audio          | ABCJS synth (Web Audio API)         |
-| Build          | Nessuno (file statici)              |
-| Stile          | CSS3 puro, responsive               |
+| Componente     | Tecnologia                                         |
+|----------------|-----------------------------------------------------|
+| Linguaggio     | JavaScript vanilla                                  |
+| Rendering note | [ABCJS](https://www.abcjs.net/) 6.6.1 (CDN + SRI) |
+| Audio          | ABCJS synth (Web Audio API)                         |
+| Export PDF     | [jsPDF](https://github.com/parallax/jsPDF) 2.5.2 + [svg2pdf.js](https://github.com/yWorks/svg2pdf.js) 2.3.0 (CDN + SRI) |
+| Build          | Nessuno (file statici)                              |
+| Stile          | CSS3 con custom properties, responsive a 3 breakpoint |
 
 ## Struttura progetto
 
 ```
 WebSightreading/
 ├── index.html        # Pagina singola + controlli UI
-├── style.css         # Foglio di stile responsive
-├── DESIGN.md         # Specifiche di design originali
+├── style.css         # Design system con CSS custom properties
+├── favicon.svg       # Icona tastiera SVG
+├── LICENSE           # MIT License
 ├── README.md         # Questo file
 └── js/
     ├── main.js       # Entry point, event listener, orchestrazione
     ├── generator.js  # Generazione casuale dello spartito (ABC notation)
     ├── renderer.js   # Wrapper ABCJS per rendering SVG
-    └── player.js     # Riproduzione audio via ABCJS synth
+    ├── player.js     # Riproduzione audio via ABCJS synth
+    └── pdf.js        # Export PDF vettoriale via jsPDF + svg2pdf.js
 ```
 
 ## Utilizzo
@@ -96,22 +101,12 @@ npx serve .
 1. Selezionare tonalita, difficolta, tempo, numero di battute e BPM
 2. Cliccare **Genera** per creare un nuovo esercizio
 3. Cliccare **Random** per generare con parametri casuali dal pool configurato
-4. Cliccare l'icona **ingranaggio** (⚙) per aprire le impostazioni Random e personalizzare il pool di tonalita, tempi e battute
-5. Cliccare **Play** per ascoltare lo spartito generato
-6. Cliccare **Stop** per interrompere la riproduzione
+4. Cliccare l'icona **ingranaggio** per aprire le impostazioni Random e personalizzare il pool
+5. Cliccare **Play** per ascoltare lo spartito generato, **Stop** per interrompere
+6. Cliccare l'icona **download** per scaricare il PDF dello spartito (nome file con tonalita, tempo, battute, difficolta e BPM)
 
 Un esercizio viene generato automaticamente al caricamento della pagina.
 
-## Esempio di output (Beginner, Do maggiore, 4/4)
+## Licenza
 
-```abc
-X:1
-T:Sight Reading Exercise
-M:4/4
-L:1/8
-K:C
-V:1 clef=treble
-!f! .C2 .E2 .G2 .E2 | .D1 .E1 .F2 E4 | z8 | z8 |]
-V:2 clef=bass
-z8 | z8 | !p! (G,2 E,2 C,1 D,1 E,2 | D,4 C,4) |]
-```
+[MIT](LICENSE)
