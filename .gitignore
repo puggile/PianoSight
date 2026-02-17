@@ -1,5 +1,4 @@
 .DS_Store
 node_modules/
 .claude/
-bin/
-obj/
+package-lock.json
