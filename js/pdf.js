@@ -31,7 +31,7 @@
 
     return pdf.svg(svgEl, { x: x, y: y, width: drawW, height: drawH })
       .then(function () {
-        pdf.save(filename || 'mymusic-score.pdf');
+        pdf.save(filename || 'pianosight-score.pdf');
       });
   }
 

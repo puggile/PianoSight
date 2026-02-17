@@ -182,7 +182,7 @@
     // --- PDF download ---
     pdfBtn.addEventListener('click', function () {
       pdfBtn.disabled = true;
-      var name = 'mymusic_' +
+      var name = 'pianosight_' +
         keySelect.value.replace(/\s+/g, '-').replace('#', 's') +
         '_' + timeSigSelect.value.replace('/', '-') +
         '_' + measuresSelect.value + 'bat' +

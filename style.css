@@ -1,5 +1,5 @@
 /* ============================================
-   myMusic — Design System & Styles
+   PianoSight — Design System & Styles
    ============================================ */
 
 :root {
@@ -55,16 +55,30 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-icon {
+  flex-shrink: 0;
+}
+
 .app-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.logo-accent {
+  color: var(--blue);
 }
 
 .subtitle {
   color: var(--text-muted);
   font-size: 0.95rem;
-  margin-top: 0.25rem;
+  margin-top: 0.3rem;
 }
 
 /* ---- Container ---- */
