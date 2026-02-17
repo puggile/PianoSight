@@ -230,10 +230,17 @@ button:disabled {
   transition: background var(--transition), color var(--transition), border-color var(--transition);
 }
 
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
   background: var(--border-light);
   color: var(--text);
   border-color: #cbc9c4;
+}
+
+.icon-btn:disabled {
+  color: var(--text-faint);
+  border-color: var(--border-light);
+  cursor: not-allowed;
+  background: transparent;
 }
 
 /* ============================================

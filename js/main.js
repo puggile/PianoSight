@@ -90,6 +90,7 @@
     var randomBtn = document.getElementById('random-btn');
     var randomSettingsBtn = document.getElementById('random-settings-btn');
     var playBtn = document.getElementById('play-btn');
+    var pdfBtn = document.getElementById('pdf-btn');
     var audioStatus = document.getElementById('audio-status');
 
     var modalOverlay = document.getElementById('random-modal');
@@ -123,6 +124,7 @@
       );
       currentVisualObj = Renderer.render(abc);
       playBtn.disabled = false;
+      pdfBtn.disabled = false;
       audioStatus.textContent = '';
     }
 
@@ -175,6 +177,25 @@
         audioStatus.textContent = 'Errore audio: ' + err.message;
         playBtn.textContent = 'Play';
       });
+    });
+
+    // --- PDF download ---
+    pdfBtn.addEventListener('click', function () {
+      pdfBtn.disabled = true;
+      var name = 'mymusic_' +
+        keySelect.value.replace(/\s+/g, '-').replace('#', 's') +
+        '_' + timeSigSelect.value.replace('/', '-') +
+        '_' + measuresSelect.value + 'bat' +
+        '_' + difficultySelect.value +
+        '_' + bpmSlider.value + 'bpm' +
+        '.pdf';
+      PdfExport.download(name)
+        .catch(function (err) {
+          audioStatus.textContent = 'Errore PDF: ' + err.message;
+        })
+        .then(function () {
+          pdfBtn.disabled = false;
+        });
     });
 
     // --- Modal logic ---
