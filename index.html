@@ -98,6 +98,8 @@
 
       <div class="control-group buttons">
         <button id="generate-btn">Genera</button>
+        <button id="random-btn">Random</button>
+        <button id="random-settings-btn" class="icon-btn" title="Impostazioni Random">&#9881;</button>
         <button id="play-btn" disabled>Play</button>
       </div>
     </div>
@@ -107,6 +109,20 @@
     </div>
 
     <div id="audio-status"></div>
+
+    <div id="random-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <span>Impostazioni Random</span>
+          <button id="random-modal-close" class="modal-close-btn">&times;</button>
+        </div>
+        <div id="random-modal-body" class="modal-body"></div>
+        <div class="modal-footer">
+          <small>Per Intermedio e Avanzato il pool viene espanso automaticamente.</small>
+          <button id="random-reset-btn">Ripristina default</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.js"></script>

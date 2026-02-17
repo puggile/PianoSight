@@ -12,6 +12,9 @@ con possibilita di riproduzione audio per verificare la propria lettura.
 - **3 indicazioni di tempo**: 4/4, 3/4, 2/4
 - **Battute selezionabili**: 4, 6 o 8
 - **BPM regolabile**: 60-140 (default 90)
+- **Bottone Random**: genera esercizi con tonalita, tempo e battute casuali da un pool configurabile
+- **Configurazione Random**: modal con checkbox per scegliere quali parametri includere nel pool casuale; le preferenze persistono in localStorage
+- **Espansione automatica per difficolta**: Principiante usa il pool configurato, Intermedio aggiunge G/Em/Bb/Gm + 3/4 + 8 battute, Avanzato usa tutte le opzioni disponibili
 - **Dinamiche**: f, p, mf, mp assegnate automaticamente per sezione
 - **Articolazioni**: staccato e legato con assegnazione variata
 
@@ -92,8 +95,10 @@ npx serve .
 
 1. Selezionare tonalita, difficolta, tempo, numero di battute e BPM
 2. Cliccare **Genera** per creare un nuovo esercizio
-3. Cliccare **Play** per ascoltare lo spartito generato
-4. Cliccare **Stop** per interrompere la riproduzione
+3. Cliccare **Random** per generare con parametri casuali dal pool configurato
+4. Cliccare l'icona **ingranaggio** (⚙) per aprire le impostazioni Random e personalizzare il pool di tonalita, tempi e battute
+5. Cliccare **Play** per ascoltare lo spartito generato
+6. Cliccare **Stop** per interrompere la riproduzione
 
 Un esercizio viene generato automaticamente al caricamento della pagina.
 
