@@ -7,108 +7,111 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <header class="app-header">
     <h1>myMusic</h1>
     <p class="subtitle">Esercizi casuali di lettura musicale per pianisti</p>
+  </header>
+
+  <main class="container">
+    <div class="card notation-card">
+      <div id="notation"></div>
+      <div id="audio-status"></div>
+    </div>
 
     <div class="card controls">
-      <div class="control-group">
-        <label for="key">Tonalita</label>
-        <select id="key">
-          <optgroup label="Maggiore">
-            <option value="C" selected>Do (C)</option>
-            <option value="G">Sol (G)</option>
-            <option value="D">Re (D)</option>
-            <option value="A">La (A)</option>
-            <option value="E">Mi (E)</option>
-            <option value="B">Si (B)</option>
-            <option value="F">Fa (F)</option>
-            <option value="Bb">Sib (Bb)</option>
-            <option value="Eb">Mib (Eb)</option>
-            <option value="Ab">Lab (Ab)</option>
-          </optgroup>
-          <optgroup label="Minore">
-            <option value="Am">Lam (Am)</option>
-            <option value="Em">Mim (Em)</option>
-            <option value="Bm">Sim (Bm)</option>
-            <option value="F#m">Fa#m (F#m)</option>
-            <option value="Dm">Rem (Dm)</option>
-            <option value="Gm">Solm (Gm)</option>
-            <option value="Cm">Dom (Cm)</option>
-            <option value="Fm">Fam (Fm)</option>
-          </optgroup>
-          <optgroup label="Dorico">
-            <option value="D dor">Re Dorico (D dor)</option>
-            <option value="G dor">Sol Dorico (G dor)</option>
-            <option value="A dor">La Dorico (A dor)</option>
-            <option value="C dor">Do Dorico (C dor)</option>
-          </optgroup>
-          <optgroup label="Misolidio">
-            <option value="G mix">Sol Misolidio (G mix)</option>
-            <option value="C mix">Do Misolidio (C mix)</option>
-            <option value="D mix">Re Misolidio (D mix)</option>
-            <option value="F mix">Fa Misolidio (F mix)</option>
-          </optgroup>
-          <optgroup label="Lidio">
-            <option value="F lyd">Fa Lidio (F lyd)</option>
-            <option value="C lyd">Do Lidio (C lyd)</option>
-            <option value="G lyd">Sol Lidio (G lyd)</option>
-            <option value="Bb lyd">Sib Lidio (Bb lyd)</option>
-          </optgroup>
-          <optgroup label="Frigio">
-            <option value="E phr">Mi Frigio (E phr)</option>
-            <option value="A phr">La Frigio (A phr)</option>
-            <option value="B phr">Si Frigio (B phr)</option>
-            <option value="D phr">Re Frigio (D phr)</option>
-          </optgroup>
-        </select>
+      <div class="controls-grid">
+        <div class="control-group">
+          <label for="key">Tonalita</label>
+          <select id="key">
+            <optgroup label="Maggiore">
+              <option value="C" selected>Do (C)</option>
+              <option value="G">Sol (G)</option>
+              <option value="D">Re (D)</option>
+              <option value="A">La (A)</option>
+              <option value="E">Mi (E)</option>
+              <option value="B">Si (B)</option>
+              <option value="F">Fa (F)</option>
+              <option value="Bb">Sib (Bb)</option>
+              <option value="Eb">Mib (Eb)</option>
+              <option value="Ab">Lab (Ab)</option>
+            </optgroup>
+            <optgroup label="Minore">
+              <option value="Am">Lam (Am)</option>
+              <option value="Em">Mim (Em)</option>
+              <option value="Bm">Sim (Bm)</option>
+              <option value="F#m">Fa#m (F#m)</option>
+              <option value="Dm">Rem (Dm)</option>
+              <option value="Gm">Solm (Gm)</option>
+              <option value="Cm">Dom (Cm)</option>
+              <option value="Fm">Fam (Fm)</option>
+            </optgroup>
+            <optgroup label="Dorico">
+              <option value="D dor">Re Dorico (D dor)</option>
+              <option value="G dor">Sol Dorico (G dor)</option>
+              <option value="A dor">La Dorico (A dor)</option>
+              <option value="C dor">Do Dorico (C dor)</option>
+            </optgroup>
+            <optgroup label="Misolidio">
+              <option value="G mix">Sol Misolidio (G mix)</option>
+              <option value="C mix">Do Misolidio (C mix)</option>
+              <option value="D mix">Re Misolidio (D mix)</option>
+              <option value="F mix">Fa Misolidio (F mix)</option>
+            </optgroup>
+            <optgroup label="Lidio">
+              <option value="F lyd">Fa Lidio (F lyd)</option>
+              <option value="C lyd">Do Lidio (C lyd)</option>
+              <option value="G lyd">Sol Lidio (G lyd)</option>
+              <option value="Bb lyd">Sib Lidio (Bb lyd)</option>
+            </optgroup>
+            <optgroup label="Frigio">
+              <option value="E phr">Mi Frigio (E phr)</option>
+              <option value="A phr">La Frigio (A phr)</option>
+              <option value="B phr">Si Frigio (B phr)</option>
+              <option value="D phr">Re Frigio (D phr)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="difficulty">Difficolta</label>
+          <select id="difficulty">
+            <option value="beginner">Principiante</option>
+            <option value="intermediate" selected>Intermedio</option>
+            <option value="advanced">Avanzato</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="timesig">Tempo</label>
+          <select id="timesig">
+            <option value="4/4" selected>4/4</option>
+            <option value="3/4">3/4</option>
+            <option value="2/4">2/4</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="measures">Battute</label>
+          <select id="measures">
+            <option value="4" selected>4</option>
+            <option value="6">6</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="bpm">BPM: <span id="bpm-value">90</span></label>
+          <input type="range" id="bpm" min="60" max="140" value="90">
+        </div>
       </div>
 
-      <div class="control-group">
-        <label for="difficulty">Difficolta</label>
-        <select id="difficulty">
-          <option value="beginner">Principiante</option>
-          <option value="intermediate" selected>Intermedio</option>
-          <option value="advanced">Avanzato</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="timesig">Tempo</label>
-        <select id="timesig">
-          <option value="4/4" selected>4/4</option>
-          <option value="3/4">3/4</option>
-          <option value="2/4">2/4</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="measures">Battute</label>
-        <select id="measures">
-          <option value="4" selected>4</option>
-          <option value="6">6</option>
-          <option value="8">8</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="bpm">BPM: <span id="bpm-value">90</span></label>
-        <input type="range" id="bpm" min="60" max="140" value="90">
-      </div>
-
-      <div class="control-group buttons">
+      <div class="controls-actions">
         <button id="generate-btn">Genera</button>
         <button id="random-btn">Random</button>
         <button id="random-settings-btn" class="icon-btn" title="Impostazioni Random">&#9881;</button>
         <button id="play-btn" disabled>Play</button>
       </div>
     </div>
-
-    <div class="card notation-card">
-      <div id="notation"></div>
-    </div>
-
-    <div id="audio-status"></div>
 
     <div id="random-modal" class="modal-overlay hidden">
       <div class="modal">
@@ -123,7 +126,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.js"></script>
   <script src="js/generator.js"></script>
