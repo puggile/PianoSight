@@ -275,12 +275,18 @@
     var rhAll = [], lhAll = [];
     var dynIdx = 0;
 
-    // Beginner: ensure the two blocks get different articulations
-    var beginnerArts;
+    // Beginner: ~25% chance of clean (no articulation, contrasting dynamics),
+    // otherwise the two blocks get different articulations
+    var beginnerArts, beginnerClean = false;
     if (difficulty === 'beginner') {
-      beginnerArts = Math.random() < 0.5
-        ? ['staccato', 'legato']
-        : ['legato', 'staccato'];
+      if (Math.random() < 0.25) {
+        beginnerArts = ['none', 'none'];
+        beginnerClean = true;
+      } else {
+        beginnerArts = Math.random() < 0.5
+          ? ['staccato', 'legato']
+          : ['legato', 'staccato'];
+      }
     }
 
     for (var b = 0; b < blocks.length; b++) {
@@ -306,7 +312,7 @@
 
         if (art === 'staccato') {
           applyStaccato(mel, 2);
-        } else {
+        } else if (art !== 'none') {
           if (difficulty === 'beginner') {
             applyFullLegato(mel);
           } else {
@@ -314,8 +320,12 @@
           }
         }
 
-        // Dynamic
-        setDynamic(mel, DYNAMICS[dynIdx++ % DYNAMICS.length]);
+        // Dynamic: clean beginner gets contrasting f/p
+        if (beginnerClean) {
+          setDynamic(mel, b === 0 ? '!f!' : '!p!');
+        } else {
+          setDynamic(mel, DYNAMICS[dynIdx++ % DYNAMICS.length]);
+        }
 
         // Push measures
         for (var m = 0; m < blk.len; m++) {
