@@ -26,6 +26,7 @@
       <h1>Piano<span class="logo-accent">Sight</span></h1>
     </div>
     <p class="subtitle">Esercizi casuali di lettura a prima vista</p>
+    <button id="help-btn" class="icon-btn help-btn" title="Guida">?</button>
   </header>
 
   <main class="container">
@@ -140,6 +141,48 @@
         <div class="modal-footer">
           <small>Per Intermedio e Avanzato il pool viene espanso automaticamente.</small>
           <button id="random-reset-btn">Ripristina default</button>
+        </div>
+      </div>
+    </div>
+    <div id="help-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <span>Guida</span>
+          <button id="help-modal-close" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="help-item">
+            <div class="help-item-title">&#9835; Cos'e PianoSight</div>
+            <div class="help-item-desc">Genera spartiti casuali per esercitarti nella lettura a prima vista al pianoforte.</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#9654; Genera</div>
+            <div class="help-item-desc">Crea uno spartito con le impostazioni che hai scelto manualmente (tonalita, difficolta, tempo, battute).</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#127922; Random</div>
+            <div class="help-item-desc">Sceglie casualmente dal pool configurabile di tonalita, tempi e battute, poi genera lo spartito.</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#9881; Ingranaggio</div>
+            <div class="help-item-desc">Apre la configurazione del pool Random: scegli quali tonalita, tempi e battute includere nell'estrazione casuale.</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#9205; Play / Stop</div>
+            <div class="help-item-desc">Riproduce o ferma l'audio dello spartito generato, alla velocita indicata dal BPM.</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#8681; PDF</div>
+            <div class="help-item-desc">Scarica lo spartito corrente in formato PDF.</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">&#9881; Controlli</div>
+            <div class="help-item-desc"><strong>Tonalita</strong> — scala e armatura di chiave.
+              <strong>Difficolta</strong> — Principiante (note semplici, posizione fissa), Intermedio (ritmi vari, salti moderati), Avanzato (figurazioni complesse, ampio raggio).
+              <strong>Tempo</strong> — 4/4, 3/4 o 2/4.
+              <strong>Battute</strong> — lunghezza dello spartito.
+              <strong>BPM</strong> — velocita di riproduzione audio.</div>
+          </div>
         </div>
       </div>
     </div>

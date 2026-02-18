@@ -84,6 +84,24 @@ body {
   margin-top: 0.3rem;
 }
 
+.app-header {
+  position: relative;
+}
+
+.help-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+}
+
 /* ---- Container ---- */
 .container {
   max-width: 900px;
@@ -403,6 +421,32 @@ button:disabled {
   background: var(--border-light);
   color: var(--text);
   border-color: #cbc9c4;
+}
+
+/* ---- Help modal items ---- */
+.help-item {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.help-item:last-child {
+  border-bottom: none;
+}
+
+.help-item-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.help-item-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.help-item-desc strong {
+  color: var(--text);
 }
 
 /* ---- Modal config content ---- */

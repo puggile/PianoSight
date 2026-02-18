@@ -98,6 +98,10 @@
     var modalCloseBtn = document.getElementById('random-modal-close');
     var resetBtn = document.getElementById('random-reset-btn');
 
+    var helpBtn = document.getElementById('help-btn');
+    var helpModal = document.getElementById('help-modal');
+    var helpModalClose = document.getElementById('help-modal-close');
+
     // Update BPM display
     bpmSlider.addEventListener('input', function () {
       bpmValue.textContent = bpmSlider.value;
@@ -285,6 +289,21 @@
     resetBtn.addEventListener('click', function () {
       saveConfig(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
       buildModalContent();
+    });
+
+    // --- Help modal logic ---
+    helpBtn.addEventListener('click', function () {
+      helpModal.classList.remove('hidden');
+    });
+
+    helpModalClose.addEventListener('click', function () {
+      helpModal.classList.add('hidden');
+    });
+
+    helpModal.addEventListener('click', function (e) {
+      if (e.target === helpModal) {
+        helpModal.classList.add('hidden');
+      }
     });
 
     // Auto-generate on load
