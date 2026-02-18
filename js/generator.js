@@ -122,7 +122,7 @@
         if (recent.length > 4) recent.shift();
 
         var abc = noteToAbc(n.letterIdx, n.octave) + (dur === 1 ? '' : dur);
-        tokens.push({ abc: abc, isRest: false });
+        tokens.push({ abc: abc, isRest: false, dur: dur });
       }
       out.push(tokens);
     }
@@ -277,7 +277,17 @@
         if (t.slurEnd)   s += ')';
         strs.push(s);
       }
-      parts.push(strs.join(' '));
+      // Join tokens: consecutive eighth notes (dur=1) without space to beam them
+      var joined = strs[0] || '';
+      for (var i = 1; i < strs.length; i++) {
+        var prev = tokens[i - 1], cur = tokens[i];
+        if (prev.dur === 1 && cur.dur === 1 && !prev.isRest && !cur.isRest) {
+          joined += strs[i];
+        } else {
+          joined += ' ' + strs[i];
+        }
+      }
+      parts.push(joined);
     }
     return parts.join(' | ') + ' |]';
   }
