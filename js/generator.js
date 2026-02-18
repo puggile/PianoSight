@@ -249,10 +249,13 @@
 
   /* ── Note pools by difficulty ───────────────────────────────────── */
   function getPools(diff) {
-    if (diff === 'beginner') return {
-      rh: buildPool(0, 4, 4, 4),  // C4–G4 (5 notes, fixed hand position)
-      lh: buildPool(0, 3, 4, 3)   // C3–G3 (5 notes, fixed hand position)
-    };
+    if (diff === 'beginner') {
+      // Randomly pick one of two 5-finger positions, same for both hands
+      if (Math.random() < 0.5) {
+        return { rh: buildPool(0, 4, 4, 4), lh: buildPool(0, 3, 4, 3) }; // C–G
+      }
+      return { rh: buildPool(1, 4, 5, 4), lh: buildPool(1, 3, 5, 3) };   // D–A
+    }
     if (diff === 'intermediate') return {
       rh: buildPool(0, 4, 0, 5),  // C4–C5
       lh: buildPool(4, 2, 4, 3)   // G2–G3
