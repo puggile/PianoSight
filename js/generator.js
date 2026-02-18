@@ -7,18 +7,19 @@
   /* ── Rhythm patterns (arrays of eighth-note unit durations) ──────── */
   var RHYTHMS = {
     '4/4': {
-      beginner:     [[8], [4, 4], [2, 2, 4], [4, 2, 2]],
+      beginner:     [[8], [4, 4], [4, 4], [2, 2, 4], [4, 2, 2],
+                     [2, 2, 4], [4, 2, 2], [1, 1, 2, 4], [4, 1, 1, 2]],
       intermediate: [[4, 4], [2, 2, 4], [4, 2, 2], [2, 2, 2, 2], [2, 4, 2]],
       advanced:     [[2, 2, 2, 2], [4, 2, 2], [2, 2, 4], [2, 4, 2],
                      [1, 1, 2, 2, 2], [2, 2, 1, 1, 2], [2, 2, 2, 1, 1]]
     },
     '3/4': {
-      beginner:     [[6], [4, 2], [2, 4], [2, 2, 2]],
+      beginner:     [[6], [4, 2], [2, 4], [2, 2, 2], [4, 2], [2, 4], [1, 1, 2, 2]],
       intermediate: [[2, 2, 2], [4, 2], [2, 4]],
       advanced:     [[2, 2, 2], [1, 1, 2, 2], [2, 1, 1, 2], [2, 2, 1, 1]]
     },
     '2/4': {
-      beginner:     [[4], [2, 2]],
+      beginner:     [[4], [2, 2], [2, 2], [1, 1, 2]],
       intermediate: [[2, 2], [4], [1, 1, 2]],
       advanced:     [[2, 2], [1, 1, 2], [2, 1, 1], [1, 1, 1, 1]]
     }
@@ -67,6 +68,23 @@
     return Math.max(0, Math.min(len - 1, cur + step));
   }
 
+  // Beginner variant: always moves to a different note, avoids 3-in-a-row
+  function nextPosBeginner(cur, len, recent) {
+    var next, attempts = 0;
+    do {
+      var step = Math.random() < 0.8
+        ? (Math.random() < 0.5 ? -1 : 1)
+        : (Math.random() < 0.5 ? -2 : 2);
+      next = Math.max(0, Math.min(len - 1, cur + step));
+      attempts++;
+      var threeInRow = recent.length >= 2 &&
+        recent[recent.length - 1] === next &&
+        recent[recent.length - 2] === next;
+    } while ((next === cur || threeInRow) && attempts < 20);
+    if (next === cur) next = cur > 0 ? cur - 1 : cur + 1;
+    return next;
+  }
+
   function closestTonic(pool, cur) {
     var best = cur, bestD = Infinity;
     for (var i = 0; i < pool.length; i++) {
@@ -83,6 +101,7 @@
     var rhythms = RHYTHMS[timeSig][difficulty];
     var pos = randInt(1, Math.max(1, pool.length - 2));
     var out = [];
+    var recent = []; // track recent positions for beginner variety
 
     for (var m = 0; m < nMeasures; m++) {
       var rhy = pick(rhythms);
@@ -93,10 +112,15 @@
         var dur = rhy[i];
         if (lastMeasure && i === rhy.length - 1) {
           pos = closestTonic(pool, pos);
+        } else if (difficulty === 'beginner') {
+          pos = nextPosBeginner(pos, pool.length, recent);
         } else {
           pos = nextPos(pos, pool.length);
         }
         var n = pool[pos];
+        recent.push(pos);
+        if (recent.length > 4) recent.shift();
+
         var abc = noteToAbc(n.letterIdx, n.octave) + (dur === 1 ? '' : dur);
         tokens.push({ abc: abc, isRest: false });
       }
@@ -226,8 +250,8 @@
   /* ── Note pools by difficulty ───────────────────────────────────── */
   function getPools(diff) {
     if (diff === 'beginner') return {
-      rh: buildPool(0, 4, 5, 4),  // C4–A4
-      lh: buildPool(0, 3, 4, 3)   // C3–G3
+      rh: buildPool(0, 4, 4, 4),  // C4–G4 (5 notes, fixed hand position)
+      lh: buildPool(0, 3, 4, 3)   // C3–G3 (5 notes, fixed hand position)
     };
     if (diff === 'intermediate') return {
       rh: buildPool(0, 4, 0, 5),  // C4–C5
