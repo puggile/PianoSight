@@ -260,15 +260,48 @@
 
   /* ── Beginner-specific decorations ───────────────────────────────── */
   var SHARPEN_OK = [0, 1, 3, 4, 5]; // C, D, F, G, A — avoid E→F and B→C
+  var NOTE_SEMITONES = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+  var SCALE_INTERVALS = {
+    '':    [0, 2, 4, 5, 7, 9, 11], // major
+    'm':   [0, 2, 3, 5, 7, 8, 10], // natural minor
+    'dor': [0, 2, 3, 5, 7, 9, 10], // dorian
+    'mix': [0, 2, 4, 5, 7, 9, 10], // mixolydian
+    'lyd': [0, 2, 4, 6, 7, 9, 11], // lydian
+    'phr': [0, 1, 3, 5, 7, 8, 10]  // phrygian
+  };
 
-  function applyAccidentals(measures, prob) {
+  function buildSharpenableSet(key) {
+    var rootLetterIdx = SCALE_LETTERS.indexOf(key.charAt(0).toUpperCase());
+    var rootSemitone = NOTE_SEMITONES[rootLetterIdx];
+    var rest = key.substring(1).trim();
+    if (rest.charAt(0) === '#') { rootSemitone = (rootSemitone + 1) % 12; rest = rest.substring(1).trim(); }
+    else if (rest.charAt(0) === 'b') { rootSemitone = (rootSemitone + 11) % 12; rest = rest.substring(1).trim(); }
+    var mode = SCALE_INTERVALS[rest] ? rest : '';
+    // Major and Lydian: no accidentals for beginner
+    if (mode === '' || mode === 'lyd') return [];
+    var intervals = SCALE_INTERVALS[mode];
+    var scaleSet = {};
+    for (var i = 0; i < intervals.length; i++) scaleSet[(rootSemitone + intervals[i]) % 12] = true;
+    // Only raised 6th and 7th degrees (melodic minor approach)
+    var result = [];
+    var degrees = [(rootLetterIdx + 5) % 7, (rootLetterIdx + 6) % 7];
+    for (var d = 0; d < degrees.length; d++) {
+      var li = degrees[d];
+      if (SHARPEN_OK.indexOf(li) === -1) continue;       // skip E/B (E#=F, B#=C)
+      if (!scaleSet[NOTE_SEMITONES[li]]) continue;        // note is altered by key sig, needs = not ^
+      result.push(li);
+    }
+    return result;
+  }
+
+  function applyAccidentals(measures, prob, sharpenable) {
     for (var m = 0; m < measures.length; m++)
       for (var i = 0; i < measures[m].length; i++) {
         var tok = measures[m][i];
         if (tok.isRest) continue;
         var ch = tok.abc.charAt(0).toUpperCase();
         var letterIdx = SCALE_LETTERS.indexOf(ch);
-        if (SHARPEN_OK.indexOf(letterIdx) !== -1 && Math.random() < prob) {
+        if (sharpenable.indexOf(letterIdx) !== -1 && Math.random() < prob) {
           tok.abc = '^' + tok.abc;
         }
       }
@@ -284,24 +317,128 @@
       }
   }
 
-  function applyCrescDim(measures, prob) {
-    for (var m = 0; m < measures.length; m++) {
-      var t = measures[m];
-      if (t.length < 2 || Math.random() > prob) continue;
-      var start = randInt(0, Math.max(0, t.length - 2));
-      if (t[start].isRest) continue;
-      var end = Math.min(start + randInt(2, 3), t.length) - 1;
-      var valid = true;
-      for (var j = start; j <= end; j++)
-        if (t[j].isRest) { valid = false; break; }
-      if (!valid || start >= end) continue;
-      if (Math.random() < 0.5) {
-        t[start].crescStart = true;
-        t[end].crescEnd = true;
+  function hasNotes(measure) {
+    for (var i = 0; i < measure.length; i++) if (!measure[i].isRest) return true;
+    return false;
+  }
+
+  function firstNoteIdx(measure) {
+    for (var i = 0; i < measure.length; i++) if (!measure[i].isRest) return i;
+    return -1;
+  }
+
+  function lastNoteIdx(measure) {
+    for (var i = measure.length - 1; i >= 0; i--) if (!measure[i].isRest) return i;
+    return -1;
+  }
+
+  /* Place 1-3 dynamics across the whole beginner piece */
+  function distributeBeginnerDynamics(rhAll, lhAll) {
+    var active = [];
+    for (var m = 0; m < rhAll.length; m++) {
+      if (hasNotes(rhAll[m])) active.push(rhAll[m]);
+      else if (hasNotes(lhAll[m])) active.push(lhAll[m]);
+    }
+    if (!active.length) return;
+
+    var r = Math.random();
+    var count = r < 0.2 ? 1 : r < 0.8 ? 2 : 3;
+    count = Math.min(count, active.length);
+
+    var lastDyn = '';
+    for (var i = 0; i < count; i++) {
+      var pos = Math.floor(active.length * i / count);
+      var dyn;
+      do { dyn = pick(DYNAMICS); } while (dyn === lastDyn && DYNAMICS.length > 1);
+      lastDyn = dyn;
+      setDynamic([active[pos]], dyn);
+    }
+  }
+
+  /* Place 0-4 cresc/dim spanning ~1 measure each across the beginner piece */
+  function distributeBeginnerCrescDim(rhAll, lhAll, timeSig) {
+    var totalBeats = MEASURE_BEATS[timeSig];
+
+    // 0: 15%, 1: 50%, 2: 20%, 3: 10%, 4: 5%
+    var r = Math.random();
+    var count;
+    if (r < 0.15) count = 0;
+    else if (r < 0.65) count = 1;
+    else if (r < 0.85) count = 2;
+    else if (r < 0.95) count = 3;
+    else count = 4;
+    if (count === 0) return;
+
+    var active = [];
+    for (var m = 0; m < rhAll.length; m++) {
+      if (hasNotes(rhAll[m])) active.push({ arr: rhAll, idx: m });
+      else if (hasNotes(lhAll[m])) active.push({ arr: lhAll, idx: m });
+    }
+    if (!active.length) return;
+    count = Math.min(count, active.length);
+
+    var used = {};
+    var placed = 0, attempts = 0;
+    while (placed < count && attempts < 30) {
+      attempts++;
+      var aIdx = randInt(0, active.length - 1);
+      if (used[aIdx]) continue;
+
+      var a = active[aIdx];
+      var measure = a.arr[a.idx];
+      var fi = firstNoteIdx(measure), li = lastNoteIdx(measure);
+      if (fi === -1 || fi === li) continue;
+
+      // Span: 3/4 measure (20%), full measure (60%), full+part next (20%)
+      var spanR = Math.random();
+      var startTok = measure[fi];
+      var endTok;
+
+      if (spanR < 0.2) {
+        // ~3/4 of the measure
+        var target = totalBeats * 0.75;
+        var cum = 0, endIdx = fi;
+        for (var i = fi; i <= li; i++) {
+          if (!measure[i].isRest) { cum += measure[i].dur; endIdx = i; }
+          if (cum >= target) break;
+        }
+        endTok = endIdx > fi ? measure[endIdx] : measure[li];
+
+      } else if (spanR < 0.8) {
+        // Full measure
+        endTok = measure[li];
+
       } else {
-        t[start].dimStart = true;
-        t[end].dimEnd = true;
+        // Full measure + part of next measure in same voice
+        var next = a.idx + 1 < a.arr.length ? a.arr[a.idx + 1] : null;
+        if (next && hasNotes(next)) {
+          var target = totalBeats * 0.25;
+          var cum = 0, endIdx = -1;
+          for (var i = 0; i < next.length; i++) {
+            if (!next[i].isRest) { cum += next[i].dur; endIdx = i; }
+            if (cum >= target) break;
+          }
+          endTok = endIdx !== -1 ? next[endIdx] : measure[li];
+          // Reserve next measure too
+          for (var i = 0; i < active.length; i++) {
+            if (active[i].arr === a.arr && active[i].idx === a.idx + 1) { used[i] = true; break; }
+          }
+        } else {
+          endTok = measure[li];
+        }
       }
+
+      if (startTok === endTok) continue;
+
+      if (Math.random() < 0.5) {
+        startTok.crescStart = true;
+        endTok.crescEnd = true;
+      } else {
+        startTok.dimStart = true;
+        endTok.dimEnd = true;
+      }
+      used[aIdx] = true;
+      placed++;
     }
   }
 
@@ -448,6 +585,7 @@
     difficulty = difficulty || 'starter';
 
     var pools = getPools(difficulty);
+    var sharpenable = buildSharpenableSet(key);
 
     var assignment;
     if (difficulty === 'starter')           assignment = assignStarter(numMeasures);
@@ -482,10 +620,8 @@
         for (var sm = 0; sm < blk.len; sm++) {
           var splitResult = generateSplitMeasure(pools, timeSig, difficulty);
           var bothHalves = [splitResult.rh, splitResult.lh];
-          applyAccidentals(bothHalves, 0.1);
+          applyAccidentals(bothHalves, 0.1, sharpenable);
           applyAccents(bothHalves, 0.08);
-          applyCrescDim(bothHalves, 0.15);
-          setDynamic([splitResult.rh], DYNAMICS[dynIdx++ % DYNAMICS.length]);
           rhAll.push(splitResult.rh);
           lhAll.push(splitResult.lh);
         }
@@ -521,15 +657,14 @@
 
         // Beginner-specific decorations
         if (difficulty === 'beginner') {
-          applyAccidentals(mel, 0.1);
+          applyAccidentals(mel, 0.1, sharpenable);
           applyAccents(mel, 0.08);
-          applyCrescDim(mel, 0.2);
         }
 
-        // Dynamic
+        // Dynamic (beginner handled after loop)
         if (starterClean) {
           setDynamic(mel, b === 0 ? '!f!' : '!p!');
-        } else {
+        } else if (difficulty !== 'beginner') {
           setDynamic(mel, DYNAMICS[dynIdx++ % DYNAMICS.length]);
         }
 
@@ -562,6 +697,12 @@
           lhAll.push(lhMel[m]);
         }
       }
+    }
+
+    // Beginner: controlled distribution of dynamics and cresc/dim
+    if (difficulty === 'beginner') {
+      distributeBeginnerDynamics(rhAll, lhAll);
+      distributeBeginnerCrescDim(rhAll, lhAll, timeSig);
     }
 
     // Build ABC string

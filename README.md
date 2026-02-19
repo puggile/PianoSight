@@ -8,20 +8,20 @@ con possibilita di riproduzione audio e download PDF dello spartito.
 
 - **Grand staff a due mani** (V:1 treble + V:2 bass)
 - **26 tonalita** su 6 modi: Maggiore, Minore, Dorico, Misolidio, Lidio, Frigio
-- **3 livelli di difficolta** con progressione lineare
+- **4 livelli di difficolta** con progressione lineare
 - **3 indicazioni di tempo**: 4/4, 3/4, 2/4
 - **Battute selezionabili**: 4, 6 o 8
 - **BPM regolabile**: 60-140 (default 90)
 - **Bottone Random**: genera esercizi con tonalita, tempo e battute casuali da un pool configurabile
 - **Configurazione Random**: modal con checkbox per scegliere quali parametri includere nel pool casuale; le preferenze persistono in localStorage
-- **Espansione automatica per difficolta**: Principiante usa il pool configurato, Intermedio aggiunge G/Em/Bb/Gm + 3/4 + 8 battute, Avanzato usa tutte le opzioni disponibili
+- **Espansione automatica per difficolta**: Iniziale/Principiante usano il pool configurato, Intermedio aggiunge G/Em/Bb/Gm + 3/4 + 8 battute, Avanzato usa tutte le opzioni disponibili
 - **Dinamiche**: f, p, mf, mp assegnate automaticamente per sezione
-- **Articolazioni**: staccato, legato, o nessuna (solo beginner)
+- **Articolazioni**: staccato, legato, o nessuna (solo iniziale)
 - **Download PDF**: esportazione vettoriale dello spartito in formato A4 con nome file univoco basato sulle impostazioni
 
 ## Livelli di difficolta
 
-### Principiante
+### Iniziale
 
 - Le mani suonano **una per volta**: le misure sono divise 50/50 tra DX e SX
 - L'ordine e casuale (a volte DX prima, a volte SX)
@@ -30,7 +30,18 @@ con possibilita di riproduzione audio e download PDF dello spartito.
 - Staccato: deterministico sulle note brevi (durata <= croma/semiminima), assente sulle lunghe
 - Legato: legatura unica sull'intera sezione
 - Ritmi semplici: semibrevi, minime, semiminime
-- Range DX: Do4-La4 | Range SX: Do3-Sol3
+- 2 posizioni fisse: Do4-Sol4 / Re4-La4 (DX), Do3-Sol3 / Re3-La3 (SX)
+
+### Principiante
+
+- **5 posizioni DX** (Fa4-Do5, Do4-Sol4, Do5-Sol5, Sol4-Re5, La4-Mi5) e **3 posizioni SX** (Do3-Sol3, Fa2-Do3, Re3-La3), scelte casualmente
+- Alternanza mani: blocchi di 1-2 misure, singole misure, e split intra-battuta (una mano per meta misura)
+- Ritmi: semibrevi, minime, semiminime, crome
+- **Accidentali**: solo 6° e 7° grado alzati (minore melodica), calcolati per tonalita (es. Do# in Rem, Fa#/Sol# in Lam)
+- **Dinamiche controllate**: 1-3 per brano (distribuzione pesata)
+- **Crescendo/diminuendo**: 0-4 per brano, durata da 3/4 di battuta a battuta intera + parte della successiva
+- Accenti e staccato/legato casuali per blocco
+- Pause occasionali (8%)
 
 ### Intermedio
 
@@ -57,10 +68,11 @@ con possibilita di riproduzione audio e download PDF dello spartito.
    - Moto congiunto preferito (85%)
    - Salti occasionali di 2-4 gradi (15%)
    - Ultima nota del brano risolta sulla tonica piu vicina
-4. **Pause** (solo intermedio/avanzato): sostituzione probabilistica di singole note
-5. **Articolazioni**: staccato deterministico sulle note corte, legatura piena o a gruppi, oppure nessuna (beginner 25%)
-6. **Dinamiche**: una per sezione (beginner/intermedio) o ogni 2 misure (avanzato); nel caso "pulito" beginner si usa f vs p
-7. **Serializzazione**: il tutto viene convertito in notazione ABC e renderizzato tramite ABCJS
+4. **Pause** (solo principiante/intermedio/avanzato): sostituzione probabilistica di singole note
+5. **Articolazioni**: staccato deterministico sulle note corte, legatura piena o a gruppi, oppure nessuna (iniziale 25%)
+6. **Dinamiche**: contrastanti f/p (iniziale pulito), 1-3 distribuite (principiante), una per sezione (intermedio), ogni 2 misure (avanzato)
+7. **Accidentali** (solo principiante): 6° e 7° grado alzati della scala, calcolati in base alla tonalita
+8. **Serializzazione**: il tutto viene convertito in notazione ABC e renderizzato tramite ABCJS
 
 ## Stack tecnologico
 
