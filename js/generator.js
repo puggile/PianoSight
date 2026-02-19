@@ -7,22 +7,33 @@
   /* ── Rhythm patterns (arrays of eighth-note unit durations) ──────── */
   var RHYTHMS = {
     '4/4': {
-      beginner:     [[8], [4, 4], [4, 4], [2, 2, 4], [4, 2, 2],
+      starter:      [[8], [4, 4], [4, 4], [2, 2, 4], [4, 2, 2],
                      [2, 2, 4], [4, 2, 2], [1, 1, 2, 4], [4, 1, 1, 2]],
+      beginner:     [[8], [4, 4], [2, 2, 4], [4, 2, 2], [2, 2, 2, 2],
+                     [1, 1, 2, 4], [4, 1, 1, 2], [2, 1, 1, 4], [1, 1, 2, 2, 2]],
       intermediate: [[4, 4], [2, 2, 4], [4, 2, 2], [2, 2, 2, 2], [2, 4, 2]],
       advanced:     [[2, 2, 2, 2], [4, 2, 2], [2, 2, 4], [2, 4, 2],
                      [1, 1, 2, 2, 2], [2, 2, 1, 1, 2], [2, 2, 2, 1, 1]]
     },
     '3/4': {
-      beginner:     [[6], [4, 2], [2, 4], [2, 2, 2], [4, 2], [2, 4], [1, 1, 2, 2]],
+      starter:      [[6], [4, 2], [2, 4], [2, 2, 2], [4, 2], [2, 4], [1, 1, 2, 2]],
+      beginner:     [[6], [4, 2], [2, 4], [2, 2, 2], [1, 1, 4], [1, 1, 2, 2], [2, 1, 1, 2]],
       intermediate: [[2, 2, 2], [4, 2], [2, 4]],
       advanced:     [[2, 2, 2], [1, 1, 2, 2], [2, 1, 1, 2], [2, 2, 1, 1]]
     },
     '2/4': {
-      beginner:     [[4], [2, 2], [2, 2], [1, 1, 2]],
+      starter:      [[4], [2, 2], [2, 2], [1, 1, 2]],
+      beginner:     [[4], [2, 2], [1, 1, 2], [2, 1, 1]],
       intermediate: [[2, 2], [4], [1, 1, 2]],
       advanced:     [[2, 2], [1, 1, 2], [2, 1, 1], [1, 1, 1, 1]]
     }
+  };
+
+  /* Sub-rhythms for split measures (keyed by eighth-note unit count) */
+  var SUB_RHYTHMS = {
+    2: [[2], [1, 1]],
+    4: [[4], [2, 2], [1, 1, 2], [2, 1, 1]],
+    6: [[6], [4, 2], [2, 4], [2, 2, 2]]
   };
 
   var DYNAMICS = ['!f!', '!p!', '!mf!', '!mp!'];
@@ -68,8 +79,8 @@
     return Math.max(0, Math.min(len - 1, cur + step));
   }
 
-  // Beginner variant: always moves to a different note, avoids 3-in-a-row
-  function nextPosBeginner(cur, len, recent) {
+  // Fixed-hand variant: always moves to a different note, avoids 3-in-a-row
+  function nextPosFixed(cur, len, recent) {
     var next, attempts = 0;
     do {
       var step = Math.random() < 0.8
@@ -101,7 +112,7 @@
     var rhythms = RHYTHMS[timeSig][difficulty];
     var pos = randInt(1, Math.max(1, pool.length - 2));
     var out = [];
-    var recent = []; // track recent positions for beginner variety
+    var recent = [];
 
     for (var m = 0; m < nMeasures; m++) {
       var rhy = pick(rhythms);
@@ -112,8 +123,8 @@
         var dur = rhy[i];
         if (lastMeasure && i === rhy.length - 1) {
           pos = closestTonic(pool, pos);
-        } else if (difficulty === 'beginner') {
-          pos = nextPosBeginner(pos, pool.length, recent);
+        } else if (difficulty === 'starter' || difficulty === 'beginner') {
+          pos = nextPosFixed(pos, pool.length, recent);
         } else {
           pos = nextPos(pos, pool.length);
         }
@@ -129,8 +140,52 @@
     return out;
   }
 
+  function generateFragment(pool, rhythm, difficulty) {
+    var pos = randInt(0, pool.length - 1);
+    var tokens = [];
+    var recent = [];
+    for (var i = 0; i < rhythm.length; i++) {
+      if (difficulty === 'starter' || difficulty === 'beginner') {
+        pos = nextPosFixed(pos, pool.length, recent);
+      } else {
+        pos = nextPos(pos, pool.length);
+      }
+      var n = pool[pos];
+      recent.push(pos);
+      tokens.push({
+        abc: noteToAbc(n.letterIdx, n.octave) + (rhythm[i] === 1 ? '' : rhythm[i]),
+        isRest: false,
+        dur: rhythm[i]
+      });
+    }
+    return tokens;
+  }
+
   function restMeasure(timeSig) {
     return [{ abc: 'z' + MEASURE_BEATS[timeSig], isRest: true }];
+  }
+
+  function generateSplitMeasure(pools, timeSig, difficulty) {
+    var totalBeats = MEASURE_BEATS[timeSig];
+    var splitPoint;
+    if (timeSig === '4/4') splitPoint = 4;
+    else if (timeSig === '3/4') splitPoint = pick([2, 4]);
+    else splitPoint = 2;
+    var secondHalf = totalBeats - splitPoint;
+
+    var rhFirst = Math.random() < 0.5;
+    var firstPool = rhFirst ? pools.rh : pools.lh;
+    var secondPool = rhFirst ? pools.lh : pools.rh;
+
+    var firstTokens = generateFragment(firstPool, pick(SUB_RHYTHMS[splitPoint]), difficulty);
+    var secondTokens = generateFragment(secondPool, pick(SUB_RHYTHMS[secondHalf]), difficulty);
+
+    var firstFull = firstTokens.concat([{ abc: 'z' + secondHalf, isRest: true, dur: secondHalf }]);
+    var restAndSecond = [{ abc: 'z' + splitPoint, isRest: true, dur: splitPoint }].concat(secondTokens);
+
+    return rhFirst
+      ? { rh: firstFull, lh: restAndSecond }
+      : { rh: restAndSecond, lh: firstFull };
   }
 
   /* ── Articulations ──────────────────────────────────────────────── */
@@ -203,15 +258,81 @@
         if (!measures[m][i].isRest) { measures[m][i].dynamic = dyn; return; }
   }
 
+  /* ── Beginner-specific decorations ───────────────────────────────── */
+  var SHARPEN_OK = [0, 1, 3, 4, 5]; // C, D, F, G, A — avoid E→F and B→C
+
+  function applyAccidentals(measures, prob) {
+    for (var m = 0; m < measures.length; m++)
+      for (var i = 0; i < measures[m].length; i++) {
+        var tok = measures[m][i];
+        if (tok.isRest) continue;
+        var ch = tok.abc.charAt(0).toUpperCase();
+        var letterIdx = SCALE_LETTERS.indexOf(ch);
+        if (SHARPEN_OK.indexOf(letterIdx) !== -1 && Math.random() < prob) {
+          tok.abc = '^' + tok.abc;
+        }
+      }
+  }
+
+  function applyAccents(measures, prob) {
+    for (var m = 0; m < measures.length; m++)
+      for (var i = 0; i < measures[m].length; i++) {
+        var tok = measures[m][i];
+        if (!tok.isRest && !tok.staccato && Math.random() < prob) {
+          tok.accent = true;
+        }
+      }
+  }
+
+  function applyCrescDim(measures, prob) {
+    for (var m = 0; m < measures.length; m++) {
+      var t = measures[m];
+      if (t.length < 2 || Math.random() > prob) continue;
+      var start = randInt(0, Math.max(0, t.length - 2));
+      if (t[start].isRest) continue;
+      var end = Math.min(start + randInt(2, 3), t.length) - 1;
+      var valid = true;
+      for (var j = start; j <= end; j++)
+        if (t[j].isRest) { valid = false; break; }
+      if (!valid || start >= end) continue;
+      if (Math.random() < 0.5) {
+        t[start].crescStart = true;
+        t[end].crescEnd = true;
+      } else {
+        t[start].dimStart = true;
+        t[end].dimEnd = true;
+      }
+    }
+  }
+
   /* ── Hand assignment per difficulty ─────────────────────────────── */
 
-  // Beginner: one contiguous block per hand (50/50 split)
-  function assignBeginner(n) {
+  // Starter: one contiguous block per hand (50/50 split)
+  function assignStarter(n) {
     var half = Math.floor(n / 2);
     var rhFirst = Math.random() < 0.5;
     var a = [];
     for (var i = 0; i < n; i++)
       a.push(i < half ? (rhFirst ? 'rh' : 'lh') : (rhFirst ? 'lh' : 'rh'));
+    return a;
+  }
+
+  // Beginner: blocks of 1-2, single measures, occasional intra-measure splits
+  function assignBeginner(n) {
+    var a = [];
+    var cur = Math.random() < 0.5 ? 'rh' : 'lh';
+    var i = 0;
+    while (i < n) {
+      if (Math.random() < 0.15) {
+        a.push('split');
+        cur = cur === 'rh' ? 'lh' : 'rh';
+        i++;
+      } else {
+        var blockLen = Math.min(randInt(1, 2), n - i);
+        for (var j = 0; j < blockLen; j++) { a.push(cur); i++; }
+        cur = cur === 'rh' ? 'lh' : 'rh';
+      }
+    }
     return a;
   }
 
@@ -248,21 +369,41 @@
   }
 
   /* ── Note pools by difficulty ───────────────────────────────────── */
+  var BEGINNER_RH_POS = [
+    [0, 4, 4, 4], // C4–G4
+    [0, 5, 4, 5], // C5–G5
+    [4, 4, 1, 5], // G4–D5
+    [3, 4, 0, 5], // F4–C5
+    [5, 4, 2, 5]  // A4–E5
+  ];
+  var BEGINNER_LH_POS = [
+    [0, 3, 4, 3], // C3–G3
+    [3, 2, 0, 3], // F2–C3
+    [1, 3, 5, 3]  // D3–A3
+  ];
+
   function getPools(diff) {
-    if (diff === 'beginner') {
-      // Randomly pick one of two 5-finger positions, same for both hands
+    if (diff === 'starter') {
       if (Math.random() < 0.5) {
-        return { rh: buildPool(0, 4, 4, 4), lh: buildPool(0, 3, 4, 3) }; // C–G
+        return { rh: buildPool(0, 4, 4, 4), lh: buildPool(0, 3, 4, 3) };
       }
-      return { rh: buildPool(1, 4, 5, 4), lh: buildPool(1, 3, 5, 3) };   // D–A
+      return { rh: buildPool(1, 4, 5, 4), lh: buildPool(1, 3, 5, 3) };
+    }
+    if (diff === 'beginner') {
+      var rp = pick(BEGINNER_RH_POS);
+      var lp = pick(BEGINNER_LH_POS);
+      return {
+        rh: buildPool(rp[0], rp[1], rp[2], rp[3]),
+        lh: buildPool(lp[0], lp[1], lp[2], lp[3])
+      };
     }
     if (diff === 'intermediate') return {
-      rh: buildPool(0, 4, 0, 5),  // C4–C5
-      lh: buildPool(4, 2, 4, 3)   // G2–G3
+      rh: buildPool(0, 4, 0, 5),
+      lh: buildPool(4, 2, 4, 3)
     };
     return {
-      rh: buildPool(0, 4, 4, 5),  // C4–G5
-      lh: buildPool(0, 2, 4, 3)   // C2–G3
+      rh: buildPool(0, 4, 4, 5),
+      lh: buildPool(0, 2, 4, 3)
     };
   }
 
@@ -273,11 +414,16 @@
       var tokens = allMeasures[m], strs = [];
       for (var i = 0; i < tokens.length; i++) {
         var t = tokens[i], s = '';
-        if (t.slurStart) s += '(';
-        if (t.dynamic)   s += t.dynamic;
-        if (t.staccato)  s += '.';
+        if (t.slurStart)  s += '(';
+        if (t.crescStart) s += '!crescendo(!';
+        if (t.crescEnd)   s += '!crescendo)!';
+        if (t.dimStart)   s += '!diminuendo(!';
+        if (t.dimEnd)     s += '!diminuendo)!';
+        if (t.dynamic)    s += t.dynamic;
+        if (t.accent)     s += '!accent!';
+        if (t.staccato)   s += '.';
         s += t.abc;
-        if (t.slurEnd)   s += ')';
+        if (t.slurEnd)    s += ')';
         strs.push(s);
       }
       // Join tokens: consecutive eighth notes (dur=1) without space to beam them
@@ -299,12 +445,13 @@
   function generate(numMeasures, key, timeSig, difficulty) {
     key        = key        || 'C';
     timeSig    = timeSig    || '4/4';
-    difficulty = difficulty || 'beginner';
+    difficulty = difficulty || 'starter';
 
     var pools = getPools(difficulty);
 
     var assignment;
-    if (difficulty === 'beginner')          assignment = assignBeginner(numMeasures);
+    if (difficulty === 'starter')           assignment = assignStarter(numMeasures);
+    else if (difficulty === 'beginner')     assignment = assignBeginner(numMeasures);
     else if (difficulty === 'intermediate') assignment = assignIntermediate(numMeasures);
     else                                   assignment = assignAdvanced(numMeasures);
 
@@ -312,15 +459,15 @@
     var rhAll = [], lhAll = [];
     var dynIdx = 0;
 
-    // Beginner: ~25% chance of clean (no articulation, contrasting dynamics),
+    // Starter: ~25% chance of clean (no articulation, contrasting dynamics),
     // otherwise the two blocks get different articulations
-    var beginnerArts, beginnerClean = false;
-    if (difficulty === 'beginner') {
+    var starterArts, starterClean = false;
+    if (difficulty === 'starter') {
       if (Math.random() < 0.25) {
-        beginnerArts = ['none', 'none'];
-        beginnerClean = true;
+        starterArts = ['none', 'none'];
+        starterClean = true;
       } else {
-        beginnerArts = Math.random() < 0.5
+        starterArts = Math.random() < 0.5
           ? ['staccato', 'legato']
           : ['legato', 'staccato'];
       }
@@ -330,19 +477,34 @@
       var blk = blocks[b];
       var isLast = (b === blocks.length - 1);
 
-      if (blk.hand === 'rh' || blk.hand === 'lh') {
+      if (blk.hand === 'split') {
+        // Split measures (beginner: one hand per half-measure)
+        for (var sm = 0; sm < blk.len; sm++) {
+          var splitResult = generateSplitMeasure(pools, timeSig, difficulty);
+          var bothHalves = [splitResult.rh, splitResult.lh];
+          applyAccidentals(bothHalves, 0.1);
+          applyAccents(bothHalves, 0.08);
+          applyCrescDim(bothHalves, 0.15);
+          setDynamic([splitResult.rh], DYNAMICS[dynIdx++ % DYNAMICS.length]);
+          rhAll.push(splitResult.rh);
+          lhAll.push(splitResult.lh);
+        }
+
+      } else if (blk.hand === 'rh' || blk.hand === 'lh') {
         var pool = blk.hand === 'rh' ? pools.rh : pools.lh;
         var mel = generateMelody(pool, blk.len, timeSig, difficulty, isLast);
 
-        // Rests (non-beginner only)
-        if (difficulty !== 'beginner') {
-          applyRests(mel, difficulty === 'intermediate' ? 0.04 : 0.08);
+        // Rests (not for starter)
+        if (difficulty !== 'starter') {
+          var restProb = difficulty === 'beginner' ? 0.08
+                       : difficulty === 'intermediate' ? 0.04 : 0.08;
+          applyRests(mel, restProb);
         }
 
         // Articulation
         var art;
-        if (difficulty === 'beginner') {
-          art = beginnerArts[b];
+        if (difficulty === 'starter') {
+          art = starterArts[b];
         } else {
           art = Math.random() < 0.5 ? 'staccato' : 'legato';
         }
@@ -350,15 +512,22 @@
         if (art === 'staccato') {
           applyStaccato(mel, 2);
         } else if (art !== 'none') {
-          if (difficulty === 'beginner') {
+          if (difficulty === 'starter') {
             applyFullLegato(mel);
           } else {
             addSlurGroups(mel, 0.5);
           }
         }
 
-        // Dynamic: clean beginner gets contrasting f/p
-        if (beginnerClean) {
+        // Beginner-specific decorations
+        if (difficulty === 'beginner') {
+          applyAccidentals(mel, 0.1);
+          applyAccents(mel, 0.08);
+          applyCrescDim(mel, 0.2);
+        }
+
+        // Dynamic
+        if (starterClean) {
           setDynamic(mel, b === 0 ? '!f!' : '!p!');
         } else {
           setDynamic(mel, DYNAMICS[dynIdx++ % DYNAMICS.length]);
@@ -378,14 +547,11 @@
       } else {
         // 'both' — advanced: both hands simultaneously
         var rhMel = generateMelody(pools.rh, blk.len, timeSig, 'advanced', isLast);
-        var lhMel = generateMelody(pools.lh, blk.len, timeSig, 'beginner', isLast);
-        // RH: rests + staccato on short notes + slur groups on longer notes
+        var lhMel = generateMelody(pools.lh, blk.len, timeSig, 'starter', isLast);
         applyRests(rhMel, 0.08);
         applyStaccato(rhMel, 2);
         addSlurGroups(rhMel, 0.25);
-        // LH: legato groups
         addSlurGroups(lhMel, 0.3);
-        // Dynamics every 2 measures
         for (var m = 0; m < blk.len; m++) {
           if (m % 2 === 0) {
             var d = DYNAMICS[(m / 2) % DYNAMICS.length];
