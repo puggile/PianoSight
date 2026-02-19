@@ -306,6 +306,28 @@
       }
     });
 
+    // --- Theme toggle ---
+    var THEME_KEY = 'pianosight-theme';
+    var themeBtn = document.getElementById('theme-btn');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      themeBtn.textContent = theme === 'dark' ? '\u2600' : '\u263E';
+      themeBtn.title = theme === 'dark' ? 'Tema chiaro' : 'Tema scuro';
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = theme === 'dark' ? '#141416' : '#f7f6f3';
+    }
+
+    // Sync button with theme already set by inline script
+    applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+
+    themeBtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+
     // Auto-generate on load
     doGenerate();
   });

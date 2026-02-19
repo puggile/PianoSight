@@ -34,6 +34,30 @@
   --transition: 0.15s ease;
 }
 
+/* ---- Dark theme ---- */
+[data-theme="dark"] {
+  --bg: #141416;
+  --surface: #1e1e22;
+  --border: #2e2e33;
+  --border-light: #252529;
+  --text: #e0ddd8;
+  --text-muted: #9b9894;
+  --text-faint: #6b6966;
+
+  --blue: #5b8def;
+  --blue-hover: #4a7aef;
+  --amber: #e5a418;
+  --amber-hover: #cc9215;
+  --green: #3fb772;
+  --green-hover: #35a063;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
 /* ---- Reset ---- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -94,6 +118,19 @@ body {
   right: 0;
   font-weight: 700;
   font-size: 0.95rem;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.theme-btn {
+  position: absolute;
+  top: 0;
+  right: 42px;
+  font-size: 1.1rem;
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -503,6 +540,53 @@ button:disabled {
   height: 18px;
   flex-shrink: 0;
 }
+
+/* ============================================
+   Dark theme overrides (hardcoded values)
+   ============================================ */
+[data-theme="dark"] button:disabled {
+  background: #35353a;
+  color: #5a5855;
+}
+
+[data-theme="dark"] select {
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%239b9894' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 0.6rem center;
+}
+
+[data-theme="dark"] select:hover {
+  border-color: #45454a;
+}
+
+[data-theme="dark"] select:focus {
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.25);
+}
+
+[data-theme="dark"] .icon-btn:hover:not(:disabled),
+[data-theme="dark"] #random-reset-btn:hover {
+  border-color: #45454a;
+}
+
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* Notation SVG: override inline fill/stroke per element type */
+[data-theme="dark"] #notation path {
+  fill: var(--text);
+}
+[data-theme="dark"] #notation path[fill="none"] {
+  fill: none;
+  stroke: var(--text);
+}
+[data-theme="dark"] #notation text {
+  fill: var(--text);
+}
+
+/* Logo: invert piano colors */
+[data-theme="dark"] .logo-icon rect[fill="#1a1a1a"] { fill: #d0cdc8; }
+[data-theme="dark"] .logo-icon rect[fill="#fff"] { fill: #252529; }
 
 /* ============================================
    Responsive
